@@ -19,3 +19,6 @@
 
 
 // TODO: reference additional headers your program requires here
+#define local_persist static
+#define global_variable static
+#define internal static
