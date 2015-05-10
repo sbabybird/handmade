@@ -4,10 +4,16 @@
 global_variable bool Running;
 global_variable BITMAPINFO BitmapInfo;
 global_variable void *BitmapMemory;
+global_variable HBITMAP BitmapHandle;
+global_variable HDC BitmapDeviceContext;
 
 internal void
 Win32ResizeDIBSection(int Width, int Height)
 {
+  if (BitmapHandle) {
+    DeleteObject(BitmapHandle);
+  }
+
   BitmapInfo.bmiHeader.biSize = sizeof(BitmapInfo.bmiHeader);
   BitmapInfo.bmiHeader.biWidth = Width;
   BitmapInfo.bmiHeader.biHeight = Height;
@@ -15,13 +21,14 @@ Win32ResizeDIBSection(int Width, int Height)
   BitmapInfo.bmiHeader.biBitCount = 32;
   BitmapInfo.bmiHeader.biCompression = BI_RGB;
 
-  HBITMAP CreateDIBSection(
-    DeviceContext,
-    &BitmapInfo,
+  if (BitmapDeviceContext) {
+    BitmapDeviceContext = CreateCompatibleDC(0);
+  }
+  BitmapHandle = CreateDIBSection(
+    BitmapDeviceContext, &BitmapInfo,
     DIB_RGB_COLORS,
     &BitmapMemory,
-    0,
-    0);
+    0, 0);
 }
 
 internal void
@@ -30,10 +37,9 @@ Win32UpdateWindow(HDC DeviceContext, int X, int Y, int Width, int Height)
   StretchDIBits(DeviceContext,
     X, Y, Width, Height,
 		X, Y, Width, Height,
-		  const VOID       *lpBits,
-		  const BITMAPINFO *lpBitsInfo,
-		  DIB_RGB_COLORS,
-		  SRCCOPY);
+    &BitmapMemory,
+    &BitmapInfo,
+    DIB_RGB_COLORS, SRCCOPY);
 }
 
 LRESULT CALLBACK
