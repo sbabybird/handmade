@@ -11,6 +11,7 @@
 // }
 
 #include <windows.h>
+#include "smj.h"
 // TODO: reference additional headers your program requires here
 #define local_persist static
 #define global_variable static
@@ -125,6 +126,8 @@ _In_  LPSTR lpCmdLine,
 _In_  int nCmdShow)
 {
 	WNDCLASS wc = {};
+  CHello* pH = new CHello();
+  pH->sayHello();
 
 	// TODO(casey): Check if HREDRAW/VREDRAW/OWNDC still matter
 	wc.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
