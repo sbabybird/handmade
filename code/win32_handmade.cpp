@@ -119,6 +119,30 @@ LPARAM lParam)
 	return lrResult;
 }
 
+CHello::CHello() {
+   this->SayHello();
+}
+
+CHello::~CHello() {
+  
+}
+
+void CHello::SayHello() {
+  MessageBox(NULL, "hello", "hello", MB_OK);
+}
+
+CHelloA::CHelloA() {
+  //this->SayHello();
+}
+
+CHelloA::~CHelloA() {
+  
+}
+
+void CHelloA::SayHello() {
+  MessageBox(NULL, "hello a", "hello a", MB_OK);
+}
+
 int CALLBACK
 WinMain(_In_  HINSTANCE hInstance,
 _In_  HINSTANCE hPrevInstance,
@@ -126,8 +150,9 @@ _In_  LPSTR lpCmdLine,
 _In_  int nCmdShow)
 {
 	WNDCLASS wc = {};
-  CHello* pH = new CHello();
-  pH->sayHello();
+  //CHelloA helloa; 
+  CHelloA* p = new CHelloA();
+  p->SayHello();
 
 	// TODO(casey): Check if HREDRAW/VREDRAW/OWNDC still matter
 	wc.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
