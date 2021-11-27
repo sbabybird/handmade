@@ -1,4 +1,4 @@
-
+﻿
 #include <windows.h>
 #define local_persist static
 #define global_variable static
@@ -120,6 +120,7 @@ WinMain(_In_ HINSTANCE hInstance,
         _In_ LPSTR lpCmdLine,
         _In_ int nCmdShow)
 {
+  MessageBox(0, "中文Hello from Handmade Hero!", "Handmade Hero", MB_OK);
   WNDCLASS wc = {};
 
   // TODO(casey): Check if HREDRAW/VREDRAW/OWNDC still matter
