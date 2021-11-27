@@ -1,8 +1,10 @@
 ﻿/**
  * @file win32_handmade.cpp
  * @author SunMinjie (smj@ieforever.com)
- * @brief
- * @version 0.1
+ * @brief 跟着Youtube上的handmadehero系列编程课程的练习
+ * @link https://www.youtube.com/watch?v=w7ay7QXmo_o&t=2756s
+ * @version 0.5
+ * @init_date 2015-05-10
  * @date 2021-11-27
  *
  * @copyright Copyright (c) 2021
@@ -39,6 +41,22 @@ struct win32_offscreen_buffer
   int BytesPerPixel;
 };
 global_variable win32_offscreen_buffer GlobalBackBuffer;
+
+struct win32_window_dimension
+{
+  int Width;
+  int Height;
+};
+
+win32_window_dimension Win32GetWindowDimension(HWND Window)
+{
+  win32_window_dimension Result;
+  RECT ClientRect;
+  GetClientRect(Window, &ClientRect);
+  Result.Width = ClientRect.right - ClientRect.left;
+  Result.Height = ClientRect.bottom - ClientRect.top;
+  return Result;
+}
 
 internal void RenderWeirdGradient(win32_offscreen_buffer buffer, int XOffset, int YOffset)
 {
@@ -83,19 +101,17 @@ internal void Win32ResizeDIBSection(win32_offscreen_buffer *buffer, int Width, i
   int BitmapMemorySize = buffer->Width * buffer->Height * buffer->BytesPerPixel;
   buffer->Memory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
   buffer->Pitch = buffer->Width * buffer->BytesPerPixel;
-
-  // RenderWeirdGradient(0, 0);
 }
 
-internal void Win32DisplayBufferInWindow(HDC DeviceContext, RECT ClientRect, win32_offscreen_buffer *Buffer)
+internal void Win32DisplayBufferInWindow(HDC DeviceContext, win32_offscreen_buffer *Buffer, int WindowWidth, int WindowHeight)
 {
-  int WindowWidth = ClientRect.right - ClientRect.left;
-  int WindowHeight = ClientRect.bottom - ClientRect.top;
   StretchDIBits(DeviceContext,
                 0, 0, WindowWidth, WindowHeight,
                 0, 0, Buffer->Width, Buffer->Height,
-                Buffer->Memory, &Buffer->Info,
-                DIB_RGB_COLORS, SRCCOPY);
+                Buffer->Memory,
+                &Buffer->Info,
+                DIB_RGB_COLORS,
+                SRCCOPY);
 }
 
 LRESULT CALLBACK Win32MainWindowCallback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -106,12 +122,8 @@ LRESULT CALLBACK Win32MainWindowCallback(HWND hwnd, UINT uMsg, WPARAM wParam, LP
   {
   case WM_SIZE:
   {
-    RECT ClientRect;
-    GetClientRect(hwnd, &ClientRect);
-    int Width = ClientRect.right - ClientRect.left;
-    int Height = ClientRect.bottom - ClientRect.top;
-    Win32ResizeDIBSection(&GlobalBackBuffer, Width, Height);
-    TRACE("WM_SIZE: %d, %d\n", Width, Height);
+    win32_window_dimension Dimension = Win32GetWindowDimension(hwnd);
+    TRACE("WM_SIZE: %d, %d\n", Dimension.Width, Dimension.Height);
   }
   break;
 
@@ -141,9 +153,8 @@ LRESULT CALLBACK Win32MainWindowCallback(HWND hwnd, UINT uMsg, WPARAM wParam, LP
   {
     PAINTSTRUCT Paint;
     HDC dc = BeginPaint(hwnd, &Paint);
-    RECT ClientRect;
-    GetClientRect(hwnd, &ClientRect);
-    Win32DisplayBufferInWindow(dc, ClientRect, &GlobalBackBuffer);
+    win32_window_dimension Dimension = Win32GetWindowDimension(hwnd);
+    Win32DisplayBufferInWindow(dc, &GlobalBackBuffer, Dimension.Width, Dimension.Height);
     EndPaint(hwnd, &Paint);
   }
   break;
@@ -161,6 +172,8 @@ LRESULT CALLBACK Win32MainWindowCallback(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
+  Win32ResizeDIBSection(&GlobalBackBuffer, 1280, 720);
+
   WNDCLASS wc = {};
 
   wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -197,9 +210,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In
         RenderWeirdGradient(GlobalBackBuffer, XOffset, YOffset);
 
         HDC DeviceContext = GetDC(hwnd);
-        RECT ClientRect;
-        GetClientRect(hwnd, &ClientRect);
-        Win32DisplayBufferInWindow(DeviceContext, ClientRect, &GlobalBackBuffer);
+        win32_window_dimension Dimension = Win32GetWindowDimension(hwnd);
+        Win32DisplayBufferInWindow(DeviceContext, &GlobalBackBuffer, Dimension.Width, Dimension.Height);
         ReleaseDC(hwnd, DeviceContext);
 
         ++XOffset;
