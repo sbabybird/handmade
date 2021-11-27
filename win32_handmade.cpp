@@ -1,18 +1,28 @@
-﻿
+﻿/**
+ * @file win32_handmade.cpp
+ * @author SunMinjie (smj@ieforever.com)
+ * @brief
+ * @version 0.1
+ * @date 2021-11-27
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
+
 #include <windows.h>
+#include "trace.h"
 #define local_persist static
 #define global_variable static
 #define internal static
 
-// TODO(casey): This is a global for now.
+// TODO: This is a global for now.
 global_variable bool Running;
 global_variable BITMAPINFO BitmapInfo;
 global_variable void *BitmapMemory;
 global_variable HBITMAP BitmapHandle;
 global_variable HDC BitmapDeviceContext;
 
-internal void
-Win32ResizeDIBSection(int Width, int Height)
+internal void Win32ResizeDIBSection(int Width, int Height)
 {
   if (BitmapHandle)
   {
@@ -26,7 +36,7 @@ Win32ResizeDIBSection(int Width, int Height)
   BitmapInfo.bmiHeader.biBitCount = 32;
   BitmapInfo.bmiHeader.biCompression = BI_RGB;
 
-  if (BitmapDeviceContext)
+  if (!BitmapDeviceContext)
   {
     BitmapDeviceContext = CreateCompatibleDC(0);
   }
@@ -37,8 +47,7 @@ Win32ResizeDIBSection(int Width, int Height)
       0, 0);
 }
 
-internal void
-Win32UpdateWindow(HDC DeviceContext, int X, int Y, int Width, int Height)
+internal void Win32UpdateWindow(HDC DeviceContext, int X, int Y, int Width, int Height)
 {
   StretchDIBits(DeviceContext,
                 X, Y, Width, Height,
@@ -48,11 +57,7 @@ Win32UpdateWindow(HDC DeviceContext, int X, int Y, int Width, int Height)
                 DIB_RGB_COLORS, SRCCOPY);
 }
 
-LRESULT CALLBACK
-Win32MainWindowCallback(HWND hwnd,
-                        UINT uMsg,
-                        WPARAM wParam,
-                        LPARAM lParam)
+LRESULT CALLBACK Win32MainWindowCallback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   LRESULT lrResult = 0;
 
@@ -65,28 +70,29 @@ Win32MainWindowCallback(HWND hwnd,
     int Width = ClientRect.right - ClientRect.left;
     int Height = ClientRect.bottom - ClientRect.top;
     Win32ResizeDIBSection(Width, Height);
-    OutputDebugStringA("WM_SIZE\n");
+    TRACE("WM_SIZE: %d, %d\n", Width, Height);
   }
   break;
 
   case WM_CLOSE:
   {
-    // TODO(casey): Handle this with a message to the user?
+    // TODO: Handle this with a message to the user?
     Running = false;
-    OutputDebugStringA("WM_DESTROY\n");
+    TRACE("WM_CLOSE\n");
   }
   break;
 
   case WM_DESTROY:
-  { // TODO(casey): Handle this as an error - recreate window?
+  {
+    // TODO: Handle this as an error - recreate window?
     Running = false;
-    OutputDebugStringA("WM_CLOSE\n");
+    TRACE("WM_DESTROY\n");
   }
   break;
 
   case WM_ACTIVATEAPP:
   {
-    OutputDebugStringA("WM_ACTIVATEAPP\n");
+    TRACE("WM_ACTIVATEAPP\n");
   }
   break;
 
@@ -105,7 +111,7 @@ Win32MainWindowCallback(HWND hwnd,
 
   default:
   {
-    OutputDebugStringA("default\n");
+    TRACE("default\n");
     lrResult = DefWindowProc(hwnd, uMsg, wParam, lParam);
   }
   break;
@@ -114,16 +120,11 @@ Win32MainWindowCallback(HWND hwnd,
   return lrResult;
 }
 
-int CALLBACK
-WinMain(_In_ HINSTANCE hInstance,
-        _In_ HINSTANCE hPrevInstance,
-        _In_ LPSTR lpCmdLine,
-        _In_ int nCmdShow)
+int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
-  MessageBox(0, "中文Hello from Handmade Hero!", "Handmade Hero", MB_OK);
   WNDCLASS wc = {};
 
-  // TODO(casey): Check if HREDRAW/VREDRAW/OWNDC still matter
+  // TODO: Check if HREDRAW/VREDRAW/OWNDC still matter
   wc.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
   wc.lpfnWndProc = Win32MainWindowCallback;
   wc.hInstance = hInstance;
@@ -166,12 +167,12 @@ WinMain(_In_ HINSTANCE hInstance,
     }
     else
     {
-      // TODO(casey): logging;
+      // TODO: Logging;
     }
   }
   else
   {
-    // TODO(casey): Logging
+    // TODO: Logging
   }
 
   return 0;

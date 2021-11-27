@@ -8,7 +8,7 @@ project(handmade VERSION 0.1.0)
 
 link_libraries(user32.lib gdi32.lib)
 
-add_executable(handmade WIN32 win32_handmade.cpp)
+add_executable(handmade WIN32 win32_handmade.cpp trace.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
